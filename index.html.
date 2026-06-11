@@ -114,4 +114,206 @@
 
         button:hover {
             background-color: var(--verde-claro);
-            box-shadow: 0 4px 12px rgba(39,
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* --- GRÁFICOS VISUIAS --- */
+        .metricas-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .metrica-card {
+            background: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .metrica-card h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1rem;
+            color: #475569;
+            text-transform: uppercase;
+        }
+
+        .valor-num {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--verde-escuro);
+            margin: 0.5rem 0;
+        }
+
+        .barra-progresso-bg {
+            background-color: #e2e8f0;
+            border-radius: 10px;
+            height: 12px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 0.8rem;
+        }
+
+        .barra-progresso-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 1s ease-out, background-color 0.5s;
+        }
+
+        /* --- MENSAGEM DE FEEDBACK --- */
+        .mensagem {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            line-height: 1.6;
+            border-left: 6px solid transparent;
+        }
+
+        .sucesso { background-color: #ecfdf5; color: #065f46; border-left-color: #10b981; }
+        .alerta { background-color: #fffbeb; color: #92400e; border-left-color: #f59e0b; }
+        .perigo { background-color: #fef2f2; color: #991b1b; border-left-color: #ef4444; }
+
+        footer {
+            text-align: center;
+            padding: 2.5rem;
+            color: #64748b;
+            font-size: 0.9rem;
+            background-color: #e2e8f0;
+        }
+
+        /* Correção aplicada na responsividade aqui (removido termo incompatível) */
+        @media (max-width: 650px) {
+            .metricas-container { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Agro Forte, Futuro Sustentável</h1>
+        <p>Simulador Prático: Equilíbrio na Production de Gado</p>
+    </header>
+
+    <main class="container">
+        <section class="painel">
+            <h2>Manejo de Pastagem Rotacionada</h2>
+            <p>Insira abaixo em quantos piquetes (divisões) você vai planejar a sua fazenda de 100 hectares para ver o impacto direto na produção e na natureza:</p>
+            
+            <div class="input-group">
+                <label for="piquetes">Quantidade de Piquetes:</label>
+                <input type="number" id="piquetes" min="1" max="50" value="1">
+                <p class="dica">Dica técnica: Mais piquetes aumentam o tempo de descanso do capim.</p>
+            </div>
+
+            <button id="btnSimular">Rodar Simulação</button>
+        </section>
+
+        <section class="resultados" id="resultados" style="display: none;">
+            <h2>Painel de Indicadores da Fazenda</h2>
+            
+            <div class="metricas-container">
+                <div class="metrica-card">
+                    <h3>Produtividade Estimada</h3>
+                    <div class="valor-num" id="valProducao">0 @</div>
+                    <span id="txtStatusProducao">Ruim</span>
+                    <div class="barra-progresso-bg">
+                        <div id="barraProducao" class="barra-progresso-fill"></div>
+                    </div>
+                </div>
+
+                <div class="metrica-card">
+                    <h3>Preservação & Solo</h3>
+                    <div class="valor-num" id="valSustentabilidade">0%</div>
+                    <span id="txtStatusSust">Degradado</span>
+                    <div class="barra-progresso-bg">
+                        <div id="barraSustentabilidade" class="barra-progresso-fill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="feedbackMensagem" class="mensagem"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Projeto Competidor - Agrinho 2026 | Tecnologia a Serviço do Campo Sustentável</p>
+    </footer>
+
+    <script>
+        document.getElementById('btnSimular').addEventListener('click', function() {
+            const piquetes = parseInt(document.getElementById('piquetes').value);
+            
+            if (isNaN(piquetes) || piquetes < 1) {
+                alert("Por favor, digite um número válido de piquetes (maior que zero).");
+                return;
+            }
+
+            // Elementos da Interface
+            const areaResultados = document.getElementById('resultados');
+            const valProducao = document.getElementById('valProducao');
+            const txtStatusProducao = document.getElementById('txtStatusProducao');
+            const barraProducao = document.getElementById('barraProducao');
+
+            const valSustentabilidade = document.getElementById('valSustentabilidade');
+            const txtStatusSust = document.getElementById('txtStatusSust');
+            const barraSustentabilidade = document.getElementById('barraSustentabilidade');
+
+            const divMensagem = document.getElementById('feedbackMensagem');
+
+            // Exibir a tela de resultados
+            areaResultados.style.display = 'block';
+
+            // Cálculos dinâmicos com tetos de segurança para evitar quebras visuais
+            let porcProducao = Math.min(piquetes * 8, 100); 
+            let porcSustentabilidade = Math.min(piquetes * 10, 100); 
+            
+            if(piquetes === 1) {
+                porcProducao = 10; 
+                porcSustentabilidade = 5;
+            }
+
+            let arrobas = Math.round((porcProducao / 100) * 15);
+            if (arrobas < 1) arrobas = 1;
+
+            // Atualização dos Números e Barras de Forma Segura
+            valProducao.innerText = arrobas + " @/ha/ano";
+            valSustentabilidade.innerText = porcSustentabilidade + "%";
+
+            barraProducao.style.width = porcProducao + "%";
+            barraSustentabilidade.style.width = porcSustentabilidade + "%";
+
+            // Definição de Cores e Mensagens de Contexto Ambiental
+            if (piquetes === 1) {
+                barraProducao.style.backgroundColor = '#ef4444';
+                barraSustentabilidade.style.backgroundColor = '#ef4444';
+                txtStatusProducao.innerText = "Produtividade Crítica";
+                txtStatusSust.innerText = "Solo Degradado / Alta Emissão de CO₂";
+                
+                divMensagem.className = "mensagem perigo";
+                divMensagem.innerHTML = "<strong>Cenário Extensivo Crítico:</strong> Manter o gado em um único pasto gigante causa o superpastoreio. O boi compacta a terra com os cascos, a grama morre e o solo exposto sofre erosão. A produção cai e o meio ambiente é prejudicado.";
+            } 
+            else if (piquetes > 1 && piquetes <= 7) {
+                barraProducao.style.backgroundColor = '#f59e0b';
+                barraSustentabilidade.style.backgroundColor = '#f59e0b';
+                txtStatusProducao.innerText = "Produtividade Moderada";
+                txtStatusSust.innerText = "Solo em Recuperação Lenta";
+                
+                divMensagem.className = "mensagem alerta";
+                divMensagem.innerHTML = "<strong>Manejo de Transição:</strong> Você começou a dividir a propriedade. Isso dá um pequeno alívio para o capim crescer, melhorando a engorda do boi, mas o tempo de descanso ainda não é o ideal para neutralizar as emissões de gases de efeito estufa.";
+            } 
+            else {
+                barraProducao.style.backgroundColor = '#10b981';
+                barraSustentabilidade.style.backgroundColor = '#10b981';
+                txtStatusProducao.innerText = "Alta Performance (Agro Forte)";
+                txtStatusSust.innerText = "Carbono Neutro (Futuro Sustentável)";
+                
+                divMensagem.className = "mensagem sucesso";
+                divMensagem.innerHTML = "<strong>Equilíbrio Sustentável Perfeito!</strong> Ao adotar o sistema rotacionado intensivo, o capim descansa o tempo exato para recuperar suas folhas e criar raízes profundas. Essas raízes sugam o carbono da atmosfera e o fixam no solo. O produtor ganha mais dinheiro na mesma área sem desmatar nenhuma árvore!";
+            }
+        });
+    </script>
+</body>
+</html>
